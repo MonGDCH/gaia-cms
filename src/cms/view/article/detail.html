@@ -1,0 +1,207 @@
+<?php $this->layout('page'); ?>
+
+<?php $this->block('css'); ?>
+<style>
+    .detail-line {
+        margin-bottom: 10px;
+    }
+
+    .detail-line .detail-line-item {
+        margin-right: 20px;
+        height: 32px;
+        line-height: 32px;
+        display: inline-block;
+        min-width: 200px;
+    }
+
+    .detail-line .detail-line-item .layui-icon {
+        position: relative;
+        top: 2px;
+    }
+</style>
+<?php $this->blockEnd(); ?>
+
+<div class="layui-card page-card">
+    <div class="layui-card-body">
+        <div class="detail">
+            <div class="detail-line">
+                <div class="detail-line-item">
+                    <span class="item-label">栏目分类：</span>
+                    <span class="item-text">
+                        <?=$data['cate_title']?>
+                    </span>
+                </div>
+                <div class="detail-line-item">
+                    <span class="item-label">发布时间：</span>
+                    <span class="item-text"><?=date('Y-m-d', $data['send_time'])?></span>
+                </div>
+
+                <div class="detail-line-item">
+                    <span class="item-label">排序权重：</span>
+                    <span class="item-text">
+                        <?=$data['sort']?>
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-line">
+                <div class="detail-line-item">
+                    <span class="item-label">内容标题：</span>
+                    <span class="item-text">
+                        <?=$data['title']?>
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-line">
+                <div class="detail-line-item">
+                    <span class="item-label">热门：</span>
+                    <span class="item-text">
+                        <i class="layui-icon <?=$data['is_hot'] == '1' ? 'layui-icon-ok' : 'layui-icon-close';?>"></i>
+                    </span>
+                </div>
+                <div class="detail-line-item">
+                    <span class="item-label">推荐：</span>
+                    <span class="item-text">
+                        <i
+                            class="layui-icon <?=$data['is_recommend'] == '1' ? 'layui-icon-ok' : 'layui-icon-close';?>"></i>
+                    </span>
+                </div>
+                <div class="detail-line-item">
+                    <span class="item-label">置顶：</span>
+                    <span class="item-text">
+                        <i class="layui-icon <?=$data['is_top'] == '1' ? 'layui-icon-ok' : 'layui-icon-close';?>"></i>
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-line">
+                <div class="detail-line-item">
+                    <span class="item-label">内容标签：</span>
+                    <span class="tag" id="tags"></span>
+                </div>
+            </div>
+
+            <div class="detail-line">
+                <div class="detail-line-item">
+                    <span class="item-label">阅读数：</span>
+                    <span class="item-text">
+                        <?=$data['read']?>
+                    </span>
+                </div>
+                <div class="detail-line-item">
+                    <span class="item-label">评论数：</span>
+                    <span class="item-text">
+                        <?=$data['comment_count']?>
+                    </span>
+                </div>
+                <div class="detail-line-item">
+                    <span class="item-label">点赞数：</span>
+                    <span class="item-text">
+                        <?=$data['like']?>
+                    </span>
+                </div>
+                <div class="detail-line-item">
+                    <span class="item-label">点踩数：</span>
+                    <span class="item-text">
+                        <?=$data['bad']?>
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-line">
+                <div class="detail-line-item">
+                    <span class="item-label">内容预览：</span>
+                    <span data-id="<?=$data['id']?>" lay-on="view" class="mon-link">[查看]</span>
+                </div>
+                <div class="detail-line-item">
+                    <span class="item-label">评论审阅：</span>
+                    <span data-id="<?=$data['id']?>" lay-on="comment" class="mon-link">[查看]</span>
+                </div>
+                <div class="detail-line-item">
+                    <span class="item-label">封面图片：</span>
+                    <span data-url="<?=$data['img_url']?>" lay-on="preview" class="mon-link">[查看]</span>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="detail-line">
+                <div class="detail-line-item">
+                    <span class="item-label">SEO关键字：</span>
+                    <span class="item-text">
+                        <?=$data['keywords']?>
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-line">
+                <div class="detail-line-item">
+                    <span class="item-label">SEO描述：</span>
+                    <span class="item-text">
+                        <?=$data['description']?>
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-line">
+                <span class="item-label">备注：</span>
+                <textarea class="layui-textarea" readonly rows="6"><?=$data['remark']?></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php $this->block('js'); ?>
+<script>
+    // 标签
+    const tagsList = "<?=$data['tags']?>".split(',')
+    const tagType = ['tag-item-primary', '', 'tag-item-dark', 'tag-item-warm', 'tag-item-danger']
+    layui.use(['util'], function () {
+        const util = layui.util
+
+        // 绑定事件
+        util.on('lay-on', {
+            // 内容预览
+            view: function () {
+                let id = this.dataset.id
+                util.openWin({ url: "<?=$this->url('/cms/article/preview')?>" + '?idx=' + id });
+            },
+            // 查阅评论
+            comment: function () {
+                let id = this.dataset.id
+                layer.msg('查阅评论')
+            },
+            // 封面预览
+            preview: function () {
+                let url = this.dataset.url
+                if (!url) {
+                    layer.msg('暂无封面图片')
+                    return false;
+                }
+                top.layer.photos({
+                    photos: {
+                        title: "图片预览",
+                        data: [{ alt: "内容封面", src: url }],
+
+                    },
+                    footer: true,
+                    shade: 0.75
+                });
+            }
+        })
+
+        // 渲染标签
+        console.log(tagsList)
+        let tagsHTML = tagsList.filter(item => {
+            return item != ''
+        }).map((item, index) => {
+            let typeIndex = index % tagType.length
+            let type = tagType[typeIndex]
+            return `<button type="button" class="tag-item ${type} layui-btn layui-btn-sm">${item}</button>`
+        })
+        document.querySelector('#tags').innerHTML = tagsHTML.join('')
+    })
+
+</script>
+<?php $this->blockEnd(); ?>

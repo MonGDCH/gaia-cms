@@ -1,0 +1,66 @@
+<?php $this->layout('page'); ?>
+
+
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="preview-item">
+            <label>评论对象：</label>
+            <span data-url="<?=$data['preview_link']?>" lay-on="open" class="mon-link">
+                <?=$data['module_name']?>
+                <?=$data['title'] ? (' - ' . $data['title']) : '';?>
+            </span>
+        </div>
+        <div class="preview-item">
+            <label>评论用户：</label>
+            <?=$data['nickname']?>
+        </div>
+        <div class="preview-item">
+            <label class="mon-form-label">评论内容：</label>
+            <div class="mon-form-input">
+                <textarea class="layui-textarea" name="content" maxLength="250" rows="8"
+                    readonly><?=$data['content']?></textarea>
+            </div>
+        </div>
+        <div class="preview-item flex-between">
+            <div>
+                <label>审核状态：</label>
+                <?=$data['status_name']?>
+            </div>
+            <div>
+                <label>评论时间：</label>
+                <?=date('Y-m-d H:i:s', $data['create_time'])?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php $this->block('css'); ?>
+<style>
+    .preview-item {
+        margin-bottom: 10px;
+    }
+
+    .flex-between {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+</style>
+<?php $this->blockEnd(); ?>
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['util'], function () {
+        const util = layui.util
+        util.on('lay-on', {
+            open: function () {
+                let url = this.dataset.url
+                if (url) {
+                    util.openWin({ url: url })
+                }
+            }
+        })
+    })
+</script>
+<?php $this->blockEnd(); ?>

@@ -1,0 +1,159 @@
+<?php $this->layout('page'); ?>
+
+<div class="sub-menu-container" id="app">
+    <div class="sub-menu">
+        <div class="sub-menu-item text-center" v-for="(item, index) in menuList">
+            <a href="javascript:;" :class="[index == menu ? 'active' : '']" @click="changeMenu(index)">
+                <span v-text="item.title"></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="sub-menu-main">
+        <div class="sub-menu-main-content">
+            <table id="table"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 草稿箱操作 -->
+<script type="text/html" id="draft-toolbar">
+    <?= $this->build_toolbar('/cms/page', $uid, ['add']); ?>
+</script>
+
+<!-- 草稿箱操作 -->
+<script type="text/html" id="draft-oper">
+    <div class="oper-btns">
+        <?php if($this->checkAuth('/cms/page/edit', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-primary layui-bg-white layui-btn-xs" lay-event="edit">编辑页面</button>
+        <?php endif; ?>
+        <?php if($this->checkAuth('/cms/page/displays', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="displays">展示信息</button>
+        <?php endif; ?>
+        <?php if($this->checkAuth('/cms/page/interact', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-warm layui-btn-xs" lay-event="interact">互动信息</button>
+        <?php endif; ?>
+        <?php if($this->checkAuth('/cms/page/toggle', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/page/toggle')?>" data-title="确认发布该页面么？" data-status="2" lay-event="confirm">发布页面</button>
+        <button type="button" class="layui-btn layui-btn-danger layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/page/toggle')?>" data-title="确认删除该页面么？" data-status="0" lay-event="confirm">删除页面</button>
+        <?php endif; ?>
+    </div>
+</script>
+
+
+<!-- 回收站操作 -->
+<script type="text/html" id="delete-oper">
+    <div class="oper-btns">
+        <?php if($this->checkAuth('/cms/page/toggle', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-warm layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/page/toggle')?>" data-title="确认恢复该页面么？" data-status="1" lay-event="confirm">恢复页面</button>
+        <?php endif; ?>
+    </div>
+</script>
+
+<!-- 发布栏操作 -->
+<script type="text/html" id="publish-oper">
+    <div class="oper-btns">
+        <?php if($this->checkAuth('/cms/page/toggle', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-danger layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/page/toggle')?>" data-title="确认删除该页面么？" data-status="0" lay-event="confirm">删除页面</button>
+        <?php endif; ?>
+    </div>
+</script>
+
+
+<?php $this->block('js'); ?>
+<script src="<?= $this->assets('static/component/vue/vue.v3.js') ?>"></script>
+<script>
+    layui.use(['action', 'mTable'], function () {
+        const action = layui.action
+        const mTable = layui.mTable
+        const statusList = JSON.parse('<?=$status?>')
+
+        const { createApp, ref, onMounted, computed } = Vue
+        createApp({
+            setup() {
+                // 菜单列表
+                const menuList = [
+                    { title: '草稿箱', status: statusList['draft'] },
+                    { title: '已发布', status: statusList['publish'] },
+                    { title: '已下线', status: statusList['disable'] },
+                ]
+                // 当前选中的菜单节点索引
+                const menu = ref(0)
+                // 当前选中菜单节点信息
+                const item = computed(() => menuList[menu.value])
+
+                onMounted(() => {
+                    // 默认渲染草稿表格
+                    renderTable(statusList['draft'])
+                })
+
+                // 切换菜单
+                function changeMenu(index) {
+                    menu.value = index
+                    let status = menuList[index].status
+                    renderTable(status)
+                }
+
+                return { menuList, menu, item, changeMenu }
+            }
+        }).mount('#app')
+
+        // 渲染表格
+        function renderTable(status = 1) {
+            let toolbar = status == statusList['draft'] ? '#draft-toolbar' : '#toolbar'
+            let oper = status == statusList['draft'] ? '#draft-oper' : (status == statusList['disable'] ? '#delete-oper' : '#publish-oper')
+            // 渲染表格
+            mTable.render({
+                elem: '#table',
+                toolbar: toolbar,
+                url: "<?=$this->url('/cms/page')?>?isApi=1&status=" + status,
+                cols: [[
+                    { field: 'id', title: 'ID', width: 80, align: 'center' },
+                    {
+                        field: 'title', title: '名称', minWidth: 240, templet: (d) => {
+                            let url = "<?=$this->url('/cms/page/preview')?>" + '?idx=' + d.id
+                            return `<a class="mon-link" href="${url}" target="_blank">${d.title}</a>`
+                        }
+                    },
+                    { field: 'read', title: '阅读数', width: 80, align: 'center' },
+                    { field: 'like', title: '点赞数', width: 80, align: 'center' },
+                    { field: 'bad', title: '点踩数', width: 80, align: 'center' },
+                    { field: 'view', title: '视图模板', width: 100, align: 'center' },
+                    { field: 'sort', title: '排序', width: 80, align: 'center' },
+                    { field: 'operate', fixed: 'right', title: '操作', templet: oper, minWidth: 385, fixed: 'right' }
+                ]]
+            })
+        }
+
+        // 绑定表格事件
+        mTable.bindEvent('table', {
+            // toolbar事件
+            toolbar: {
+                // 新增
+                add: {
+                    url: "<?=$this->url('/cms/page/add')?>",
+                    title: '新增独立页面'
+                },
+            },
+            // tool事件
+            tool: {
+                // 编辑
+                edit: {
+                    url: "<?=$this->url('/cms/page/edit')?>",
+                    title: '编辑独立页面'
+                },
+                // 编辑展示信息
+                displays: (data) => {
+                    let url = "<?=$this->url('/cms/page/displays')?>?idx=" + data.id
+                    action.dialog(url, `编辑【${data.title}】展示信息`)
+                },
+                // 编辑互动信息
+                interact: (data) => {
+                    let url = "<?=$this->url('/cms/page/interact')?>?idx=" + data.id
+                    action.dialog(url, `编辑【${data.title}】互动信息`)
+                }
+            }
+        })
+    })
+</script>
+<?php $this->blockEnd(); ?>

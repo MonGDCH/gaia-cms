@@ -1,0 +1,37 @@
+<?php $this->layout('page'); ?>
+
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" method="post">
+            <input type="hidden" name="idx" value="<?=$data['id']?>">
+            <input type="hidden" name="status" value="1">
+
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">评论内容：</label>
+                <div class="mon-form-input">
+                    <textarea class="layui-textarea" name="content" maxLength="250" rows="8"><?=$data['content']?></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item layer-footer hidden">
+                <div class="layui-input-block text-left">
+                    <button class="layui-btn layui-btn-sm layui-btn-success" lay-submit
+                        lay-filter="submit">确认提交</button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['mForm'], function (mForm) {
+        // 渲染表单
+        mForm.render()
+        mForm.submit('submit')
+    })
+</script>
+<?php $this->blockEnd(); ?>

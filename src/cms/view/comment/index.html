@@ -1,0 +1,227 @@
+<?php $this->layout('page'); ?>
+
+<div class="sub-menu-container" id="app">
+    <div class="sub-menu">
+        <div class="sub-menu-item text-center" v-for="(item, index) in statusListRef">
+            <a href="javascript:;" :class="[index == statusItem ? 'active' : '']" @click="changeStatus(index)">
+                <span v-text="item"></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="sub-menu-main">
+        <!-- 搜索 -->
+        <div class="search-panel" id="search-form">
+            <form class="layui-form" lay-filter="search">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">评论时间：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="create_time" id="create_time" placeholder="评论时间" class="layui-input"
+                            autocomplete="off">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">用户ID：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="uid" class="layui-input" autocomplete="off">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">关联ID：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="union" class="layui-input" autocomplete="off">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="layui-card">
+            <div class="layui-card-body m-card-body">
+                <div class="layui-tab layui-tab-brief" lay-filter="module-handle">
+                    <ul class="layui-tab-title" id="tab-menu">
+                        <li v-for="(item, index) in moduleListRef" :lay-id="index"
+                            :class="[index== moduleItem ? 'layui-this' : '']" @click="changeModule(index)">
+                            <span>{{item.name}}</span>
+                        </li>
+                    </ul>
+                    <div class="layui-tab-content">
+                        <div class="layui-tab-item layui-show">
+                            <table id="table" lay-filter="table"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php $this->block('js'); ?>
+
+<!-- 表格操作栏 -->
+<script type="text/html" id="toolbar">
+    <?= $this->build_toolbar('/cms/comment', $uid, ['search', 'reset']); ?>
+    <span style="display: inline-block; margin-left: 12px;" class="layui-font-blue">双击行可查看评论详情</ style="display: inline-block; margin-left: 12px;">
+</script>
+
+
+<!-- 操作 -->
+<script type="text/html" id="operate">
+    <div class="oper-btns">
+        <?php if($this->checkAuth('/cms/comment/edit', $uid)): ?>
+        <!-- {{# if(d.status == '1' || d.status == '3'){ }} -->
+        <button type="button" class="layui-btn layui-btn-xs" lay-event="edit">编辑评论</button>
+        <!-- {{# } }} -->
+        <?php endif; ?>
+
+        <?php if($this->checkAuth('/cms/comment/displays', $uid)): ?>
+        <!-- {{# if(d.status == '2'){ }} -->
+        <button type="button" class="layui-btn layui-btn-xs" lay-event="displays">展示信息</button>
+        <!-- {{# } }} -->
+        <?php endif; ?>
+
+        <?php if($this->checkAuth('/cms/comment/interact', $uid)): ?>
+        <!-- {{# if(d.status == '2'){ }} -->
+        <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="interact">互动信息</button>
+        <!-- {{# } }} -->
+        <?php endif; ?>
+
+        <?php if($this->checkAuth('/cms/comment/toggle', $uid)): ?>
+        <!-- {{# if(d.status == '1'){ }} -->
+        <button type="button" class="layui-btn layui-btn-success layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/comment/toggle')?>" data-title="确认审核通过么？" data-status="2" lay-event="confirm">审核通过</button>
+        <button type="button" class="layui-btn layui-btn-warm layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/comment/toggle')?>" data-title="确认审核不通过么？" data-status="3" lay-event="confirm">审核不通过</button>
+        <!-- {{# } }} -->
+
+        <!-- {{# if(d.status == '3'){ }} -->
+        <button type="button" class="layui-btn layui-btn-success layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/comment/toggle')?>" data-title="确认审核通过么？" data-status="2" lay-event="confirm">审核通过</button>
+        <!-- {{# } }} -->
+
+        <!-- {{# if(d.status == '0'){ }} -->
+        <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/comment/toggle')?>" data-title="确认重新审核该记录么？" data-status="1" lay-event="confirm">重新审核</button>
+        <!-- {{# } }} -->
+
+        <!-- {{# if(d.status != '0'){ }} -->
+        <button type="button" class="layui-btn layui-btn-danger layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/comment/toggle')?>" data-title="确认删除么？" data-status="0" lay-event="confirm">删除评论</button>
+        <!-- {{# } }} -->
+        <?php endif; ?>
+    </div>
+</script>
+
+<script src="<?= $this->assets('static/component/vue/vue.v3.js') ?>"></script>
+<script>
+    const moduleList = JSON.parse('<?=$module?>')
+    const statusList = JSON.parse('<?=$status?>')
+    // 超级管理员组别
+    layui.use(['mTable', 'action', 'laydate', 'common'], function () {
+        const mTable = layui.mTable
+        const action = layui.action
+        const laydate = layui.laydate
+        const common = layui.common
+
+        const { createApp, ref, onMounted, computed } = Vue
+        createApp({
+            setup() {
+                // 状态列表
+                const statusListRef = ref(statusList)
+                // 当前选中的状态节点索引
+                const statusItem = ref(2)
+                // 切换状态
+                function changeStatus(index) {
+                    statusItem.value = index
+                    renderTable(moduleItem.value, index)
+                }
+
+                // 模块列表
+                const moduleListRef = ref(moduleList)
+                // 当前选中的模块节点索引
+                const moduleItem = ref('app')
+                // 切换模块
+                function changeModule(item) {
+                    moduleItem.value = item
+                    renderTable(item, statusItem.value)
+                }
+
+                onMounted(() => {
+                    renderTable(moduleItem.value, statusItem.value)
+                })
+
+                return { statusListRef, statusItem, changeStatus, moduleListRef, moduleItem, changeModule }
+            }
+        }).mount('#app')
+
+
+        // 时间区间
+        laydate.render({
+            elem: '#create_time',
+            type: 'date',
+            range: true,
+            rangeLinked: true,
+            fullPanel: true,
+            format: 'yyyy-MM-dd',
+            value: '',
+        })
+
+        // 绑定表格事件
+        mTable.bindEvent('table', {
+            toolbar: {
+                // 搜索
+                search: function (data) {
+                    if (data.create_time) {
+                        let iCreateTime = data.create_time.split(' - ')
+                        data.start_time = common.strtotime(iCreateTime[0] + ' 00:00:00')
+                        data.end_time = common.strtotime(iCreateTime[1] + ' 23:59:59')
+                    }
+
+                    return data
+                },
+            },
+            tool: {
+                // 编辑
+                edit: {
+                    dialog: true,
+                    url: "<?=$this->url('/cms/comment/edit')?>",
+                    title: '编辑评论'
+                },
+                // 编辑展示信息
+                displays: (data, table) => {
+                    let url = "<?=$this->url('/cms/comment/displays')?>?idx=" + data.id
+                    action.dialog(url, `内容展示信息`)
+                },
+                // 编辑交互信息
+                interact: (data, table) => {
+                    let url = "<?=$this->url('/cms/comment/interact')?>?idx=" + data.id
+                    action.dialog(url, `内容交互信息`)
+                },
+            }
+        })
+
+        // 绑定表格行双击
+        mTable.event.bindDBClick('table', function (table, obj) {
+            let data = obj.data
+            let url = "<?=$this->url('/cms/comment/preview')?>" + '?idx=' + data.id
+            action.dialog(url, '预览')
+        });
+
+        // 渲染组别用户
+        function renderTable(module, status) {
+            let url = "<?=$this->url('/cms/comment')?>" + '?isApi=1&module=' + module + '&status=' + status;
+            // 渲染角色用户
+            mTable.render({
+                elem: '#table',
+                url: url,
+                cols: [[
+                    { field: 'id', title: 'ID', width: 80, align: 'center' },
+                    { field: 'union_id', title: '关联ID', width: 80, align: 'center' },
+                    { field: 'uid', title: '会员ID', width: 80, align: 'center' },
+                    { field: 'nickname', title: '用户昵称', width: 120 },
+                    { field: 'content', title: '评论内容', minWidth: 240 },
+                    { field: 'like', title: '赞', width: 60, align: 'center', sort: true },
+                    { field: 'bad', title: '踩', width: 60, align: 'center', sort: true },
+                    { field: 'create_time', title: '评论时间', width: 168, align: 'center', templet: (d) => { return mTable.format.dateTime(d.create_time) }, sort: true },
+                    { field: 'ip', title: '评论IP', width: 140, align: 'center' },
+                    { field: 'operate', title: '操作', fixed: 'right', templet: '#operate', minWidth: 320 }
+                ]]
+            });
+        }
+    })
+</script>
+<?php $this->blockEnd(); ?>

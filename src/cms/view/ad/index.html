@@ -1,0 +1,102 @@
+<?php $this->layout('page'); ?>
+
+<!-- 搜索 -->
+<div class="search-panel" id="search-form">
+    <form class="layui-form" lay-filter="search">
+        <div class="layui-form-item">
+            <label class="layui-form-label">名称：</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" placeholder="搜索名称" class="layui-input" autocomplete="off">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">状态：</label>
+            <div class="layui-input-block">
+                <?=$this->build_select('status', $status, [], [], true, true)?>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<div class="layui-card">
+    <div class="layui-card-body m-card-body">
+        <!-- 表格 -->
+        <table id="table" lay-filter="table"></table>
+    </div>
+</div>
+
+
+<!-- 表格操作栏 -->
+<script type="text/html" id="toolbar">
+    <?= $this->build_toolbar('/cms/ad', $uid, ['add', 'search', 'reset']); ?>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operate">
+    <div class="oper-btns">
+        <?php if($this->checkAuth('/cms/ad/edit', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-success layui-btn-xs" lay-event="edit">编辑广告位</button>
+        <?php endif; ?>
+        <?php if($this->checkAuth('/cms/ad/assets', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="assets">编辑广告资源</button>
+        <?php endif; ?>
+    </div>
+</script>
+
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['mTable', 'mForm', 'common', 'action'], function () {
+        const mTable = layui.mTable
+        const mForm = layui.mForm
+        const common = layui.common
+        const action = layui.action
+
+        // 渲染搜索表单
+        mForm.render()
+        // 渲染表格
+        mTable.render({
+            elem: '#table',
+            url: "<?=$this->url('/cms/ad')?>?isApi=1",
+            cols: [[
+                { field: 'id', title: 'ID', width: 80, align: 'center' },
+                { field: 'title', title: '名称', minWidth: 120 },
+                { field: 'width', title: '宽度', width: 80, align: 'center' },
+                { field: 'height', title: '高度', width: 80, align: 'center' },
+                { field: 'remark', title: '备注', minWidth: 120 },
+                { field: 'status', title: '状态', width: 100, align: 'center', templet: function (d) { return mTable.format.status(d.status) } },
+                { field: 'create_time', title: '创建时间', width: 168, align: 'center', templet: function (d) { return mTable.format.dateTime(d.create_time) }, sort: true },
+                { field: 'operate', fixed: 'right', title: '操作', templet: '#operate', minWidth: 200, fixed: 'right' }
+            ]]
+        })
+        // 绑定表格事件
+        mTable.bindEvent('table', {
+            // toolbar事件
+            toolbar: {
+                // 新增
+                add: {
+                    url: "<?=$this->url('/cms/ad/add')?>",
+                    title: '新增广告位',
+                    dialog: true
+                }
+            },
+            // tool事件
+            tool: {
+                // 编辑
+                edit: {
+                    url: "<?=$this->url('/cms/ad/edit')?>",
+                    title: '编辑广告位信息',
+                    dialog: true
+                },
+                // 广告资源
+                assets: (data, table) => {
+                    let url = "<?=$this->url('/cms/ad/assets')?>?ads=" + data.id
+                    action.drawer(url, `【${data.title}】广告资源`)
+                }
+            }
+        })
+    })
+</script>
+
+<?php $this->blockEnd(); ?>

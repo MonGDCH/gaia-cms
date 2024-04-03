@@ -1,0 +1,58 @@
+<?php $this->layout('page'); ?>
+
+<div class="layui-card page-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" method="post">
+            <input type="hidden" name="idx" value="<?=$data['id']?>">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">是否热门</label>
+                <div class="layui-input-inline">
+                    <?=$this->build_checkbox('is_hot', '1', '标记热门', $data['is_hot'] == 1)?>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">是否置顶</label>
+                <div class="layui-input-inline">
+                    <?=$this->build_checkbox('is_top', '1', '标记置顶', $data['is_top'] == 1)?>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序权重</label>
+                <div class="layui-input-inline">
+                    <input type="number" name="sort" lay-affix="number" lay-precision="0" min="0" lay-verify="required"
+                        lay-verType="tips" lay-reqText="请输入排序权重" autocomplete="off" placeholder="请输入排序权重"
+                        class="layui-input" value="<?=$data['sort']?>">
+                </div>
+            </div>
+
+
+            <div class="layui-form-item layer-footer hidden">
+                <div class="layui-input-block text-left">
+                    <button class="layui-btn layui-btn-sm layui-btn-success" lay-submit
+                        lay-filter="submit">确认提交</button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['mForm'], function () {
+        const mForm = layui.mForm
+        // 渲染表单
+        mForm.render()
+        mForm.submit('submit', null, null, (form) => {
+            const is_hot = form.field.is_hot ? 1 : 0;
+            const is_top = form.field.is_top ? 1 : 0;
+
+            return { is_hot, is_top }
+        })
+    })
+</script>
+<?php $this->blockEnd(); ?>

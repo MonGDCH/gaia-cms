@@ -1,0 +1,70 @@
+<?php $this->layout('page'); ?>
+
+<div class="layui-card">
+    <div class="layui-card-body m-card-body">
+        <!-- 表格 -->
+        <table id="table" lay-filter="table"></table>
+    </div>
+</div>
+
+<!-- 表格操作栏 -->
+<script type="text/html" id="toolbar">
+    <?= $this->build_toolbar('/cms/article/tag', $uid, ['add']); ?>
+
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operate">
+    <div class="oper-btns">
+        <?php if($this->checkAuth('/cms/article/tag/edit', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-success layui-btn-xs" lay-event="edit">编辑</button>
+        <?php endif; ?>
+    </div>
+</script>
+
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['mTable', 'mForm', 'common'], function () {
+        const mTable = layui.mTable
+        const mForm = layui.mForm
+        const common = layui.common
+
+        // 渲染搜索表单
+        mForm.render()
+        // 渲染表格
+        mTable.render({
+            elem: '#table',
+            url: "<?=$this->url('/cms/article/tag')?>?isApi=1",
+            cols: [[
+                { field: 'id', title: 'ID', width: 80, align: 'center' },
+                { field: 'cate_id', title: '关联栏目', width: 140, sort: true, align: 'center', templet: (d) => { return d.cate_id == '0' ? '公共' : d.cate } },
+                { field: 'title', title: '名称', minWidth: 120 },
+                { field: 'status', title: '状态', width: 100, align: 'center', sort: true, templet: (d) => { return mTable.format.status(d.status) } },
+                { field: 'operate', fixed: 'right', title: '操作', templet: '#operate', width: 100, align: 'center' }
+            ]]
+        })
+        // 绑定表格事件
+        mTable.bindEvent('table', {
+            // toolbar事件
+            toolbar: {
+                // 新增
+                add: {
+                    dialog: true,
+                    url: "<?=$this->url('/cms/article/tag/add')?>",
+                    title: '新增文章标签'
+                },
+            },
+            // tool事件
+            tool: {
+                // 编辑
+                edit: {
+                    dialog: true,
+                    url: "<?=$this->url('/cms/article/tag/edit')?>",
+                    title: '编辑文章标签信息'
+                }
+            }
+        })
+    })
+</script>
+<?php $this->blockEnd(); ?>

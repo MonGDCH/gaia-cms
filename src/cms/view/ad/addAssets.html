@@ -1,0 +1,101 @@
+<?php $this->layout('page'); ?>
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" method="post">
+            <input type="hidden" name="ads_id" value="<?=$ads?>">
+            <div class="layui-form-item">
+                <label class="layui-form-label">图片资源</label>
+                <div class="layui-input-group">
+                    <input type="text" name="img" placeholder="广告图片资源" lay-verify="required" lay-verType="tips"
+                        lay-reqText="请上传图标" id="ads-img" class="layui-input">
+                    <div class="layui-input-suffix">
+                        <button type="button" class="layui-btn layui-btn-primary" id="upload">选择图片</button>
+                        <button type="button" class="layui-btn layui-btn-primary" id="preview">预览</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">跳转方式</label>
+                <div class="layui-input-inline">
+                    <?=$this->build_select('target', $target, [$data['target']], [], true)?>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">跳转地址</label>
+                <div class="layui-input-block">
+                    <input type="text" name="url" lay-verify="required" lay-verType="tips" lay-reqText="请输入跳转地址"
+                        placeholder="请输入跳转地址" class="layui-input" value="">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">备注</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" name="remark" maxLength="250" placeholder="备注信息"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">排序权重</label>
+                <div class="layui-input-inline">
+                    <input type="number" name="sort" lay-affix="number" lay-precision="0" min="0" lay-verify="required"
+                        lay-verType="tips" lay-reqText="请输入排序权重" autocomplete="off" placeholder="请输入排序权重"
+                        class="layui-input" value="0">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">状态</label>
+                <div class="layui-input-inline">
+                    <?= $this->build_radios('status', $status, key($status), [], true); ?>
+                </div>
+            </div>
+            <div class="layui-form-item layer-footer hidden">
+                <div class="layui-input-block text-left">
+                    <button class="layui-btn layui-btn-sm layui-btn-success" lay-submit
+                        lay-filter="submit">确认提交</button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['mForm', 'imgSelect'], function () {
+        const mForm = layui.mForm
+        const imgSelect = layui.imgSelect
+        // 渲染表单
+        mForm.render()
+        mForm.submit('submit')
+        // 图片选择
+        document.querySelector('#upload').addEventListener('click', () => {
+            imgSelect.show({
+                api: "<?=$this->url('/files')?>",
+                uploadURL: "<?=$this->url('/upload')?>",
+                callback: (data, index) => {
+                    document.querySelector('#ads-img').value = data[0].url
+                }
+            })
+        })
+        // 预览
+        document.querySelector('#preview').addEventListener('click', () => {
+            let url = document.querySelector('#ads-img').value
+            if (url) {
+                top.layer.photos({
+                    photos: {
+                        title: "图片预览",
+                        data: [{ alt: '', src: url }]
+                    },
+                    footer: true,
+                    shade: 0.75
+                });
+            }
+        })
+    })
+</script>
+<?php $this->blockEnd(); ?>

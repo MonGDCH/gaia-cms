@@ -1,0 +1,73 @@
+<?php $this->layout('page'); ?>
+
+<div class="layui-card">
+    <div class="layui-card-body m-card-body">
+        <!-- 表格 -->
+        <table id="table" lay-filter="table"></table>
+    </div>
+</div>
+
+<!-- 表格操作栏 -->
+<script type="text/html" id="toolbar">
+    <?= $this->build_toolbar('/cms/ad/assets', $uid, ['add']); ?>
+</script>
+
+<!-- 操作 -->
+<script type="text/html" id="operate">
+    <div class="oper-btns">
+        <?php if($this->checkAuth('/cms/ad/assets/edit', $uid)): ?>
+        <button type="button" class="layui-btn layui-btn-success layui-btn-xs" lay-event="edit">编辑</button>
+        <?php endif; ?>
+    </div>
+</script>
+
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['mTable', 'mForm', 'common'], function () {
+        const mTable = layui.mTable
+        const mForm = layui.mForm
+        const common = layui.common
+        const targetList = JSON.parse('<?=$target?>')
+
+        // 渲染搜索表单
+        mForm.render()
+        // 渲染表格
+        mTable.render({
+            elem: '#table',
+            url: "<?=$this->url('/cms/ad/assets', ['ads' => $ads])?>&isApi=1",
+            cols: [[
+                { field: 'id', title: 'ID', width: 80, align: 'center' },
+                { field: 'img', title: '图片', width: 80, align: 'center', templet: d => mTable.format.image(d.img) },
+                { field: 'url', title: '跳转地址', width: 160, templet: d => mTable.format.url(d.url) },
+                { field: 'target', title: '跳转方式', width: 140, align: 'center', templet: d => targetList[d.target] || '未知' },
+                { field: 'remark', title: '备注', minWidth: 120 },
+                { field: 'sort', title: '排序', width: 80, align: 'center', sort: true },
+                { field: 'status', title: '状态', width: 100, align: 'center', sort: true, templet: d => mTable.format.status(d.status) },
+                { field: 'operate', fixed: 'right', title: '操作', templet: '#operate', minWidth: 80, align: 'center' }
+            ]]
+        })
+        // 绑定表格事件
+        mTable.bindEvent('table', {
+            // toolbar事件
+            toolbar: {
+                // 新增
+                add: {
+                    dialog: true,
+                    url: "<?=$this->url('/cms/ad/assets/add', ['ads' => $ads])?>",
+                    title: '新增广告资源'
+                },
+            },
+            // tool事件
+            tool: {
+                // 编辑
+                edit: {
+                    dialog: true,
+                    url: "<?=$this->url('/cms/ad/assets/edit', ['ads' => $ads])?>",
+                    title: '编辑广告资源信息'
+                }
+            }
+        })
+    })
+</script>
+<?php $this->blockEnd(); ?>

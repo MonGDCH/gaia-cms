@@ -1,0 +1,237 @@
+<?php $this->layout('page'); ?>
+
+<div class="sub-menu-container">
+    <!-- 栏目选择 -->
+    <div class="sub-menu" style="width: 300px; min-width: 300px;">
+        <div class="layui-card">
+            <div class="layui-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>栏目分类列表</span>
+                <button type="button" class="layui-btn layui-btn-sm layui-btn-success" lay-on="allCate">全部</button>
+            </div>
+            <div class="layui-card-body">
+                <input type="hidden" id="selectCateID" value="0">
+                <div id="cateTree" class="mr-xs mr-lr-md">加载数据中...</div>
+            </div>
+            <div style="height: 20px;"></div>
+        </div>
+    </div>
+
+
+    <!-- 内容信息列表 -->
+    <div class="sub-menu-main">
+        <div class="layui-card">
+            <div class="layui-tab layui-tab-brief" lay-filter="status-handle">
+                <ul class="layui-tab-title" id="tab-menu"></ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <div style="padding: 0 12px;">
+                            <p>当前栏目分类：<strong id="selectGroup">全部</strong></p>
+                            <table id="table" lay-filter="table"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作栏 -->
+<div class="hidden" type="text/html" id="toolbar">
+    <?= $this->build_toolbar('/cms/article', $uid, ['add', 'searchBar']); ?>
+</div>
+
+<!-- 操作 -->
+<script type="text/html" id="operate">
+    <div class="oper-btns">
+        <?php if($this->checkAuth('/cms/article/edit', $uid)): ?>
+        <!-- {{# if(d.status == '1' || d.status == '2'){ }} -->
+        <button type="button" class="layui-btn layui-btn-xs" lay-event="edit">编辑文章</button>
+        <!-- {{# } }} -->
+        <?php endif; ?>
+
+        <?php if($this->checkAuth('/cms/article/displays', $uid)): ?>
+        <!-- {{# if(d.status == '3'){ }} -->
+        <button type="button" class="layui-btn layui-btn-xs" lay-event="displays">展示信息</button>
+        <!-- {{# } }} -->
+        <?php endif; ?>
+
+        <?php if($this->checkAuth('/cms/article/interact', $uid)): ?>
+        <!-- {{# if(d.status == '3'){ }} -->
+        <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" lay-event="interact">互动信息</button>
+        <!-- {{# } }} -->
+        <?php endif; ?>
+
+        <?php if($this->checkAuth('/cms/article/toggle', $uid)): ?>
+        <!-- {{# if(d.status == '2'){ }} -->
+        <button type="button" class="layui-btn layui-btn-success layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/article/toggle')?>" data-title="确认发布该文章么？" data-status="3" lay-event="confirm">发布通过</button>
+        <button type="button" class="layui-btn layui-btn-warm layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/article/toggle')?>" data-title="确认拒绝发布该文章么？" data-status="4" lay-event="confirm">拒绝发布</button>
+        <!-- {{# } }} -->
+
+        <!-- {{# if(d.status == '4'){ }} -->
+        <button type="button" class="layui-btn layui-btn-success layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/article/toggle')?>" data-title="确认发布该文章么？" data-status="3" lay-event="confirm">发布通过</button>
+        <!-- {{# } }} -->
+
+        <!-- {{# if(d.status == '1'){ }} -->
+        <button type="button" class="layui-btn layui-btn-success layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/article/toggle')?>" data-title="确认提交发布审核么？" data-status="2" lay-event="confirm">提交审核</button>
+        <!-- {{# } }} -->
+
+        <!-- {{# if(d.status == '0' || d.status == '4'){ }} -->
+        <button type="button" class="layui-btn layui-btn-normal layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/article/toggle')?>" data-title="确认重新编辑该文章么？" data-status="1" lay-event="confirm">重新编辑</button>
+        <!-- {{# } }} -->
+
+        <!-- {{# if(d.status != '0'){ }} -->
+        <button type="button" class="layui-btn layui-btn-danger layui-btn-xs" data-idx="{{ d.id }}" data-url="<?=$this->url('/cms/article/toggle')?>" data-title="确认删除下线该文章么？" data-status="0" lay-event="confirm">删除下线</button>
+        <!-- {{# } }} -->
+        <?php endif; ?>
+    </div>
+</script>
+
+<?php $this->block('js'); ?>
+<script>
+    const status = '<?=json_encode($status);?>'
+    const statusList = JSON.parse(status)
+    // 超级管理员组别
+    layui.use(['tree', 'http', 'mTable', 'action', 'element', 'util'], function () {
+        const tree = layui.tree
+        const http = layui.http
+        const mTable = layui.mTable
+        const action = layui.action
+        const element = layui.element
+        const util = layui.util
+
+        // tab 切换事件
+        element.on('tab(status-handle)', function (data) {
+            renderUserTable()
+        });
+
+        // 绑定点击事件
+        util.on('lay-on', {
+            // 链接选择栏目
+            cate: function () {
+                let cate_id = this.dataset.cate
+                let cate = this.innerText
+                changeCate(cate_id, cate)
+            },
+            // 全部栏目
+            allCate: function () {
+                changeCate('', '全部')
+            },
+            // 预览
+            preview: function () {
+                let id = this.dataset.idx || ''
+                let url = "<?=$this->url('/cms/article/detail')?>" + '?idx=' + id
+                action.drawer(url, `内容详情`)
+            }
+        })
+
+        // 渲染标签页
+        renderTabMenu()
+        // 加载组别树
+        renderLayTree()
+        // 加载组别用户表格
+        renderUserTable();
+        // 绑定表格事件
+        mTable.bindEvent('table', {
+            toolbar: {
+                // 新增
+                add: {
+                    url: "<?=$this->url('/cms/article/add')?>",
+                    title: '新增文章'
+                },
+            },
+            tool: {
+                // 编辑
+                edit: {
+                    url: "<?=$this->url('/cms/article/edit')?>",
+                    title: '编辑文章'
+                },
+                // 编辑展示信息
+                displays: (data, table) => {
+                    let url = "<?=$this->url('/cms/article/displays')?>?idx=" + data.id
+                    action.dialog(url, `【${data.title}】内容展示信息`)
+                },
+                // 编辑交互信息
+                interact: (data, table) => {
+                    let url = "<?=$this->url('/cms/article/interact')?>?idx=" + data.id
+                    action.dialog(url, `【${data.title}】内容交互信息`)
+                },
+            }
+        })
+
+        // 切换栏目
+        function changeCate(id, title) {
+            document.querySelector('#selectCateID').value = id
+            document.querySelector('#selectGroup').innerHTML = title
+            renderUserTable()
+        }
+
+        // 渲染标签页
+        function renderTabMenu() {
+            let html = statusList.map((item, i) => {
+                return `<li data-status="${i}" lay-id="menu-${i}" class="${i == 1 ? 'layui-this' : ''}">${item}</li>`
+            })
+
+            document.querySelector('#tab-menu').innerHTML = html.join('')
+        }
+
+        // 渲染layui树
+        function renderLayTree() {
+            http.ajax({ url: "<?=$this->url('/cms/article')?>?getCate=1" }).then(ret => {
+                if (ret.code != '1') {
+                    // parent.toast.error(ret.msg);
+                    parent.layer.msg(ret.msg, { icon: 2 })
+                    return;
+                }
+                let data = ret.data.map(item => {
+                    item.spread = true
+                    return item
+                })
+                // 渲染
+                tree.render({
+                    id: 'cateTree',
+                    elem: '#cateTree',
+                    data: data,
+                    onlyIconControl: true,
+                    showLine: true,
+                    text: {
+                        defaultNodeName: '未命名',
+                        none: '无数据'
+                    },
+                    click: function (obj) {
+                        let field = obj.data
+                        changeCate(field.id, field.title)
+                    }
+                });
+
+            })
+        }
+
+        // 渲染组别用户
+        function renderUserTable() {
+            // 获取查看状态
+            let status = document.querySelector('#tab-menu li.layui-this').dataset.status || ''
+            let url = "<?=$this->url('/cms/article')?>" + '?isApi=1&status=' + status;
+            let cate_id = document.querySelector('#selectCateID').value
+            if (cate_id) {
+                url += '&cate_id=' + cate_id
+            }
+            // 渲染角色用户
+            mTable.render({
+                elem: '#table',
+                url: url,
+                cols: [[
+                    { field: 'id', title: 'ID', width: 80, align: 'center' },
+                    { field: 'cate', title: '栏目', width: 120, align: 'center', templet: (d) => { return `<a href="javascript:;" class="mon-link" lay-on="cate" data-cate="${d.cate_id}">${d.cate}</a>` } },
+                    { field: 'title', title: '名称', minWidth: 240, templet: (d) => { return `<a href="javascript:;" class="mon-link" lay-on="preview" data-idx="${d.id}">${d.title}</a>` } },
+                    { field: 'img', title: '封面', width: 80, align: 'center', templet: (d) => { return d.img ? mTable.format.image(d.img) : '' } },
+                    { field: 'send_time', title: '发布时间', width: 100, align: 'center', templet: (d) => { return mTable.format.date(d.send_time) }, sort: true },
+                    { field: 'read', title: '浏览数', width: 90, align: 'center', sort: true },
+                    { field: 'like', title: '点赞数', width: 90, align: 'center', sort: true },
+                    { field: 'sort', title: '权重', width: 80, align: 'center', sort: true },
+                    { field: 'operate', title: '操作', fixed: 'right', templet: '#operate', minWidth: 310 }
+                ]]
+            });
+        }
+    })
+</script>
+<?php $this->blockEnd(); ?>

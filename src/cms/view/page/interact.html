@@ -1,0 +1,55 @@
+<?php $this->layout('page'); ?>
+
+
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" method="post">
+            <input type="hidden" name="idx" value="<?=$data['id']?>">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">阅读数</label>
+                <div class="layui-input-inline">
+                    <input type="number" name="read" lay-affix="number" lay-precision="0" min="0" lay-verify="required"
+                        lay-verType="tips" lay-reqText="请输入阅读数" autocomplete="off" placeholder="请输入阅读数"
+                        class="layui-input" value="<?=$data['read']?>">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">点赞数</label>
+                <div class="layui-input-inline">
+                    <input type="number" name="like" lay-affix="number" lay-precision="0" min="0" lay-verify="required"
+                        lay-verType="tips" lay-reqText="请输入点赞数" autocomplete="off" placeholder="请输入点赞数"
+                        class="layui-input" value="<?=$data['like']?>">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">点踩数</label>
+                <div class="layui-input-inline">
+                    <input type="number" name="bad" lay-affix="number" lay-precision="0" min="0" lay-verify="required"
+                        lay-verType="tips" lay-reqText="请输入点踩数" autocomplete="off" placeholder="请输入点踩数"
+                        class="layui-input" value="<?=$data['bad']?>">
+                </div>
+            </div>
+
+            <div class="layui-form-item layer-footer hidden">
+                <div class="layui-input-block text-left">
+                    <button class="layui-btn layui-btn-sm layui-btn-success" lay-submit
+                        lay-filter="submit">确认提交</button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['mForm'], function (mForm) {
+        // 渲染表单
+        mForm.render()
+        mForm.submit('submit')
+    })
+</script>
+<?php $this->blockEnd(); ?>

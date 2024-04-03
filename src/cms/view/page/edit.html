@@ -1,0 +1,172 @@
+<?php $this->layout('page'); ?>
+
+<div class="layui-card page-card">
+    <div class="layui-card-body">
+        <form class="layui-form" action="" method="post">
+            <input type="hidden" name="idx" value="<?=$data['id']?>">
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">标题</label>
+                <div class="mon-form-input">
+                    <input type="text" name="title" lay-verify="required" lay-verType="tips" lay-reqText="请输入标题"
+                        placeholder="请输入标题" class="layui-input" value="<?=$data['title']?>">
+                </div>
+            </div>
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">封面图片</label>
+                <div class="mon-form-input">
+                    <div class="layui-input-group">
+                        <input type="text" name="img" placeholder="封面图片" id="img" class="layui-input"
+                            value="<?=$data['img']?>">
+                        <div class="layui-input-suffix">
+                            <button type="button" class="layui-btn layui-btn-primary" id="upload">选择图片</button>
+                            <button type="button" class="layui-btn layui-btn-primary" id="preview">预览</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">视图模板</label>
+                <div class="mon-form-input">
+                    <div class="layui-input-inline">
+                        <?=$this->build_select('view', $tmp, [$data['view']], [], true)?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">内容文档类型</label>
+                <div class="layui-input-inline">
+                    <?= $this->build_radios('type', ['0'=>'HTML', '1'=>'MarkDown'], $data['type'], ['lay-filter' => 'type'], true); ?>
+                </div>
+            </div>
+
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">内容</label>
+                <div class="mon-form-input">
+                    <div id="content" style="height: 540px;"></div>
+                    <textarea id="editor-content" class="hidden"><?=$data['content']?></textarea>
+                </div>
+            </div>
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">SEO关键字</label>
+                <div class="mon-form-input">
+                    <input type="text" name="keywords" placeholder="请输入SEO关键字" class="layui-input"
+                        value="<?=$data['keywords']?>">
+                </div>
+            </div>
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">SEO描述</label>
+                <div class="mon-form-input">
+                    <input type="text" name="description" placeholder="请输入SEO描述" class="layui-input"
+                        value="<?=$data['description']?>">
+                </div>
+            </div>
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">排序权重</label>
+                <div class="mon-form-input">
+                    <div class="layui-input-inline">
+                        <input type="number" lay-affix="number" lay-precision="0" name="sort"
+                            value="<?=$data['sort']?>"" step=" 1" min="0" max="100" lay-verify="required|number"
+                            lay-verType="tips" class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mon-form-item">
+                <label class="mon-form-label">备注</label>
+                <div class="mon-form-input">
+                    <textarea class="layui-textarea" name="remark" maxLength="250"><?=$data['remark']?></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item layer-footer hidden">
+                <div class="layui-input-block text-left">
+                    <button class="layui-btn layui-btn-sm layui-btn-success" lay-submit
+                        lay-filter="submit">确认提交</button>
+                    <button type="reset" class="layui-btn layui-btn-sm layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<?php $this->block('js'); ?>
+<script>
+    layui.use(['mForm', 'editor', 'imgSelect', 'markdown'], function () {
+        const mForm = layui.mForm
+        const editor = layui.editor
+        const imgSelect = layui.imgSelect
+        const markdown = layui.markdown
+        const content = document.querySelector('#editor-content').value
+        const uploadURL = "<?=$this->url('/upload')?>"
+        let type = "<?=$data['type']?>";
+
+        // 渲染表单
+        mForm.render()
+        mForm.submit('submit', null, null, () => {
+            let content = type == '0' ? editor.getContent('content') : markdown.getMarkdown()
+            return { content: content }
+        })
+
+        // 渲染编辑器
+        renderEditor();
+        mForm.callback(form => {
+            form.on('radio(type)', function (data) {
+                if (type == data.elem.value) {
+                    return;
+                }
+                type = data.elem.value
+                renderEditor();
+            });
+        })
+
+        function renderEditor() {
+            document.querySelector('#content').innerHTML = ''
+            if (type == '0') {
+                document.querySelector('#content').innerHTML = content
+                editor.render('content', {
+                    language: "zh_CN",
+                    images_upload_url: uploadURL
+                })
+            } else {
+                editor.remove('content')
+                markdown.render('content', uploadURL, content)
+            }
+        }
+
+        // 图片上传
+        document.querySelector('#upload').addEventListener('click', () => {
+            imgSelect.show({
+                api: "<?=$this->url('/files')?>",
+                uploadURL: uploadURL,
+                callback: (data, index) => {
+                    document.querySelector('#img').value = data[0].url
+                }
+            })
+        })
+        // 预览
+        document.querySelector('#preview').addEventListener('click', () => {
+            let url = document.querySelector('#img').value
+            if (url) {
+                top.layer.photos({
+                    photos: {
+                        title: "图片预览",
+                        data: [{ alt: '', src: url }]
+                    },
+                    // 是否显示底部栏
+                    footer: true,
+                    shade: 0.75
+                });
+            }
+        })
+    })
+</script>
+<?php $this->blockEnd(); ?>
