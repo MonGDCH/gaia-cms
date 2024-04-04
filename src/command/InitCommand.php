@@ -14,7 +14,7 @@ use mon\console\Input;
 use mon\console\Output;
 use mon\console\Command;
 use plugins\admin\dao\MenuDao;
-use plugins\admin\dao\RuleDao;
+use plugins\admin\dao\AuthRuleDao;
 
 /**
  * 数据库初始化
@@ -145,8 +145,7 @@ class InitCommand extends Command
 
         $this->createMenu($this->menu, MenuDao::instance());
         $out->spin();
-        $this->createRule($this->rule, RuleDao::instance());
-
+        $this->createRule($this->rule, AuthRuleDao::instance());
 
         $out->spinEnd();
         $out->block('Installation done!', 'SUCCESS');
