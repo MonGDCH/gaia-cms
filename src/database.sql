@@ -1,4 +1,4 @@
-CREATE TABLE `cms_ads` (
+CREATE TABLE IF NOT EXISTS `cms_ads` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '名称',
   `width` int(4) UNSIGNED NOT NULL DEFAULT 0 COMMENT '宽度',
@@ -10,7 +10,7 @@ CREATE TABLE `cms_ads` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '广告表' ROW_FORMAT = DYNAMIC;
 
-CREATE TABLE `cms_ads_img` (
+CREATE TABLE IF NOT EXISTS `cms_ads_img` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `ads_id` int(11) UNSIGNED NOT NULL COMMENT '所属广告ID',
   `img` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图片地址',
@@ -24,7 +24,7 @@ CREATE TABLE `cms_ads_img` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '广告资源表' ROW_FORMAT = DYNAMIC;
 
-CREATE TABLE `cms_article` (
+CREATE TABLE IF NOT EXISTS `cms_article` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `uid` int(11) UNSIGNED NOT NULL COMMENT '创建人ID',
   `cate_id` int(11) UNSIGNED NOT NULL COMMENT '所属分类ID',
@@ -49,7 +49,7 @@ CREATE TABLE `cms_article` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '文章表' ROW_FORMAT = DYNAMIC;
 
-CREATE TABLE `cms_article_content` (
+CREATE TABLE IF NOT EXISTS `cms_article_content` (
   `acticle_id` int(11) UNSIGNED NOT NULL COMMENT '文章ID',
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '文章内容',
   `update_time` int(10) UNSIGNED NOT NULL,
@@ -57,13 +57,13 @@ CREATE TABLE `cms_article_content` (
   PRIMARY KEY (`acticle_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '文章内容表' ROW_FORMAT = DYNAMIC;
 
-CREATE TABLE `cms_article_tag` (
+CREATE TABLE IF NOT EXISTS `cms_article_tag` (
   `acticle_id` int(11) UNSIGNED NOT NULL COMMENT '文章ID',
   `tag_id` int(11) UNSIGNED NOT NULL COMMENT '标签ID',
   PRIMARY KEY (`acticle_id`, `tag_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '文章标签表' ROW_FORMAT = DYNAMIC;
 
-CREATE TABLE `cms_cate` (
+CREATE TABLE IF NOT EXISTS `cms_cate` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `pid` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '父级ID',
   `type` tinyint(1) UNSIGNED NOT NULL DEFAULT 0 COMMENT '0-栏目主页 1-栏目列表 2-跳转链接',
@@ -79,7 +79,7 @@ CREATE TABLE `cms_cate` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '栏目分类表' ROW_FORMAT = DYNAMIC;
 
-CREATE TABLE `cms_comment` (
+CREATE TABLE IF NOT EXISTS `cms_comment` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `uid` int(11) UNSIGNED NOT NULL DEFAULT 0 COMMENT '用户ID',
   `module` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'app' COMMENT '所属模块 app-系统留言 doc-内容评论 page-单页评论',
@@ -99,7 +99,7 @@ CREATE TABLE `cms_comment` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '评论表' ROW_FORMAT = COMPACT;
 
-CREATE TABLE `cms_page` (
+CREATE TABLE IF NOT EXISTS `cms_page` (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `uid` int(11) UNSIGNED NOT NULL COMMENT '创建人ID',
   `title` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '名称',
@@ -122,7 +122,7 @@ CREATE TABLE `cms_page` (
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '独立页面表' ROW_FORMAT = DYNAMIC;
 
-CREATE TABLE `cms_page_content` (
+CREATE TABLE IF NOT EXISTS `cms_page_content` (
   `page_id` int(11) UNSIGNED NOT NULL COMMENT '单页ID',
   `type` tinyint(3) UNSIGNED NOT NULL DEFAULT 0 COMMENT '0-HTML 1-MarkDown',
   `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '单页内容',
