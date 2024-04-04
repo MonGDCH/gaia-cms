@@ -53,7 +53,7 @@ class InitCommand extends Command
     protected $menu = [
         ['name' => 'cms', 'title' => '内容管理', 'icon' => 'layui-icon layui-icon-template-1', 'chilid' => [
             ['name' => '/cms/ad', 'title' => '区块广告', 'icon' => 'layui-icon layui-icon-template-1'],
-            ['name' => '/cms/cate', 'title' => '积分签到', 'icon' => 'layui-icon layui-icon-template-1'],
+            ['name' => '/cms/cate', 'title' => '栏目分类', 'icon' => 'layui-icon layui-icon-template-1'],
             ['name' => '/cms/page', 'title' => '独立页面', 'icon' => 'layui-icon layui-icon-template-1'],
             ['name' => '/cms/article', 'title' => '文章管理', 'icon' => 'layui-icon layui-icon-template-1'],
             ['name' => '/cms/comment', 'title' => '用户评论', 'icon' => 'layui-icon layui-icon-template-1'],

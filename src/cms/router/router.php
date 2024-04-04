@@ -7,15 +7,15 @@
 |
 */
 
+use mon\env\Config;
 use mon\http\Route;
 use plugins\cms\controller\AdController;
-use app\admin\middleware\AuthMiddleware;
-use app\admin\middleware\LoginMiddleware;
 use plugins\cms\controller\CateController;
 use plugins\cms\controller\PageController;
+use plugins\admin\middleware\AuthMiddleware;
+use plugins\admin\middleware\LoginMiddleware;
 use plugins\cms\controller\ArticleController;
 use plugins\cms\controller\CommentController;
-
 
 Route::instance()->group(Config::instance()->get('admin.app.root_path', ''), function (Route $route) {
     // 权限验证
