@@ -111,8 +111,9 @@
         });
         mForm.render()
         mForm.submit('submit', null, null, (form) => {
-            const menu = form.field.menu ? 1 : 0;
-            return { menu: menu }
+            let menu = form.field.menu ? 1 : 0;
+            let pid = form.field.pid ? form.field.pid : 0
+            return { menu: menu, pid }
         })
 
         // 图片上传
