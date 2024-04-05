@@ -63,16 +63,16 @@
         },
         {
             "name": "mongdch/gaia-ucenter",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MonGDCH/gaia-ucenter.git",
-                "reference": "3d55c2afe0a3f3b127999524f5f1dc2ee04872b0"
+                "reference": "1c7c83aa52c6e6c5fe312911193eb90a2d18a8cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MonGDCH/gaia-ucenter/zipball/3d55c2afe0a3f3b127999524f5f1dc2ee04872b0",
-                "reference": "3d55c2afe0a3f3b127999524f5f1dc2ee04872b0",
+                "url": "https://api.github.com/repos/MonGDCH/gaia-ucenter/zipball/1c7c83aa52c6e6c5fe312911193eb90a2d18a8cb",
+                "reference": "1c7c83aa52c6e6c5fe312911193eb90a2d18a8cb",
                 "shasum": ""
             },
             "require": {
@@ -109,9 +109,9 @@
             ],
             "support": {
                 "issues": "https://github.com/MonGDCH/gaia-ucenter/issues",
-                "source": "https://github.com/MonGDCH/gaia-ucenter/tree/1.0.0"
+                "source": "https://github.com/MonGDCH/gaia-ucenter/tree/1.0.1"
             },
-            "time": "2024-04-03T06:42:21+00:00"
+            "time": "2024-04-04T09:17:56+00:00"
         },
         {
             "name": "mongdch/mon-auth-think",
